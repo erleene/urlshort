@@ -41,16 +41,24 @@ func MapHandler(pathsToUrls map[string]string, fallback http.Handler) http.Handl
 //
 // See MapHandler to create a similar http.HandlerFunc via
 // a mapping of paths to urls.
+
 func YAMLHandler(yml []byte, fallback http.Handler) (http.HandlerFunc, error) {
 	// TODO: Implement this...
 	//unmarshael yam
-	out := make(map[string]string)
+	// type Out struct {
+	// 	path string `yaml:"path"`
+	// 	url  string `yaml:"url"`
+	// }
 
-	err := yaml.Unmarshal(yml, out)
+	//out := Out{}
+	var c map[string]interface{}
+
+	err := yaml.Unmarshal(yml, &c)
 	if err != nil {
 		log.Fatalf("cannot unmarshat data: %v", err)
 	}
-	fmt.Println(out)
+	fmt.Println(c)
+
 	//use out to check for path
 	//return MapHandler(out, fallback.ServeHTTP(w http.ResponseWriter, req *http.Request)), nil
 	// if path, ok := out[req.URL.Path]; ok {
