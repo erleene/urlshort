@@ -1,7 +1,6 @@
 package urlshort
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 
@@ -43,27 +42,24 @@ func MapHandler(pathsToUrls map[string]string, fallback http.Handler) http.Handl
 // a mapping of paths to urls.
 
 func YAMLHandler(yml []byte, fallback http.Handler) (http.HandlerFunc, error) {
-	// TODO: Implement this...
-	//unmarshael yam
-	// type Out struct {
-	// 	path string `yaml:"path"`
-	// 	url  string `yaml:"url"`
-	// }
 
-	//out := Out{}
-	var c map[string]interface{}
+	// define the object to unmarshal
+	var out []struct {
+		Path string `yaml:"path"`
+		url  string `yaml:"url"`
+	}
 
-	err := yaml.Unmarshal(yml, &c)
-	if err != nil {
+	if err := yaml.Unmarshal(yml, &out); err != nil {
 		log.Fatalf("cannot unmarshat data: %v", err)
 	}
-	fmt.Println(c)
 
-	//use out to check for path
-	//return MapHandler(out, fallback.ServeHTTP(w http.ResponseWriter, req *http.Request)), nil
-	// if path, ok := out[req.URL.Path]; ok {
-	// 	http.Redirect(w, req, path, http.StatusFound)
-	// }
-	// fallback.ServeHTTP(w, req)
-	return nil, nil
+	return func(w http.ResponseWriter, req *http.Request) {
+		for _, path := range out {
+			if path.Path == req.URL.Path {
+				http.Redirect(w, req, path.url, http.StatusFound)
+				return
+			}
+		}
+		fallback.ServeHTTP(w, req)
+	}, nil
 }
